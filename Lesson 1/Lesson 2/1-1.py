@@ -14,12 +14,12 @@ headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:84.0)
 link = 'https://omsk.hh.ru/search/vacancy?page='
 page = 0
 # i = 0
+vacancies = []
 while True:
     response = requests.get(link + str(page), params=params, headers=headers)
     soup = bs(response.text, 'html.parser')
     if response.ok:
         vacancy_list = soup.findAll('div', {'class': 'vacancy-serp-item'})
-        vacancies = []
         for vacancy in vacancy_list:
             vacancy_data = {}
             vacancy_name = (vacancy.find('a'))
@@ -53,6 +53,6 @@ while True:
 
         if next_button == []:
             break
-
+print(f'{len(vacancies)} вакансий найдено')
 df = pd.DataFrame(vacancies)
 df.to_excel("output.xlsx")
