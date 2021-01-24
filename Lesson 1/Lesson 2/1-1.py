@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 import pandas as pd
 import re
+import json
 
 search = input("Введите название профессии для поиска: ")
 main_link = 'https://omsk.hh.ru'
@@ -37,22 +38,24 @@ while True:
             vacancy_data['currency'] = salary.text.split(' ')[-1]
             salary_text = ''.join(salary.text.split()[:-1])  # добавил salary_text, чтобы собрать строку без валюты
             if salary.text.find('от') > -1:
-                vacancy_data['sal_min'] = re.sub('\D', '', salary_text)
+                vacancy_data['sal_min'] = int(re.sub('\D', '', salary_text))
                 vacancy_data['sal_max'] = None
             elif salary.text.find('до') > -1:
                 vacancy_data['sal_max'] = None
-                vacancy_data['sal_max'] = re.sub('\D', '', salary_text)
+                vacancy_data['sal_max'] = int(re.sub('\D', '', salary_text))
             elif salary.text.find('-') > -1:
-                vacancy_data['sal_min'] = re.sub('\D', '', salary_text.split('-')[0])
-                vacancy_data['sal_max'] = re.sub('\D', '', salary_text.split('-')[-1])
+                vacancy_data['sal_min'] = int(re.sub('\D', '', salary_text.split('-')[0]))
+                vacancy_data['sal_max'] = int(re.sub('\D', '', salary_text.split('-')[-1]))
             # print(f'{i}){vacancy_data}')
             vacancies.append(vacancy_data)
 
         page += 1
         next_button = soup.findAll('a', {'class': 'bloko-button HH-Pager-Controls-Next HH-Pager-Control'})
 
-        if next_button == []:
+        if not next_button:
             break
+with open ('result.json', 'w', encoding='utf-8') as write_f:
+    json.dump(vacancies, write_f)
 print(f'{len(vacancies)} вакансий найдено')
 df = pd.DataFrame(vacancies)
 df.to_excel("output.xlsx")
